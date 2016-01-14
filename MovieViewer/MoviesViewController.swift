@@ -16,6 +16,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     @IBOutlet var tableView: UITableView!
     
    
+    @IBOutlet var errorView: UILabel!
+   
     
     var refresher: UIRefreshControl!
 
@@ -31,7 +33,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         activityIndicator.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray
         view.addSubview(activityIndicator)
         activityIndicator.startAnimating()
-        UIApplication.sharedApplication().beginIgnoringInteractionEvents()
+        UIApplication.sharedApplication().beginIgnoringInteractionEvents()*/
+        
         
         refresher = UIRefreshControl()
         
@@ -41,16 +44,17 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         
         self.tableView.addSubview(refresher)
         
-        refresh()*/
+        refresh()
 
         tableView.dataSource = self
         tableView.delegate = self
-        
        
-      EZLoadingActivity.show("Loading...", disableUI: true)
-        let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
         
-        let url = NSURL(string:"https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
+               let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
+                let url = NSURL(string:"https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
+        
+        
+ EZLoadingActivity.show("Loading...", disableUI: true)
         let request = NSURLRequest(URL: url!)
         let session = NSURLSession(
             configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
@@ -58,11 +62,13 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
             delegateQueue:NSOperationQueue.mainQueue()
         )
         
-      
+        
+       
         let task : NSURLSessionDataTask = session.dataTaskWithRequest(request,
             completionHandler: { (dataOrNil, response, error) in
                 if let data = dataOrNil {
-                      EZLoadingActivity.hide(success: true, animated: true) 
+                    
+                    if error != nil {
                     
                     if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
                         data, options:[]) as? NSDictionary {
@@ -73,34 +79,42 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                             
                             self.movies = responseDictionary["results"] as! [NSDictionary]
                             
+                            EZLoadingActivity.hide(success: true, animated: true)
+
                             self.tableView.reloadData()
-                           
+                    } else {
+                        
+                        EZLoadingActivity.hide(success: false, animated: true)
+                  
+                        
+                        
+                        }
+                        
                             
                             
                             
                     }
                 }
-                
-                
-
+            
+            
         });
 
         
        
 task.resume()
-       
         
-    }
-/*
     
-  /  func refresh() {
+    }
+
+    
+   func refresh() {
     
         
         self.tableView.reloadData()
         
         self.refresher.endRefreshing()
         
-    }*/
+    }
   
     
     override func didReceiveMemoryWarning() {
@@ -121,6 +135,7 @@ task.resume()
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
+        
         let cell = tableView.dequeueReusableCellWithIdentifier("MovieCell", forIndexPath: indexPath) as! MovieCell
         
         let movie = movies![indexPath.row]
@@ -133,18 +148,21 @@ task.resume()
         let imageURL = NSURL(string: baseURL + posterPath)
         
         
+        
         cell.titleLabel.text = title
         
         cell.overviewCell.text = overview
         
         cell.posterView.setImageWithURL(imageURL!)
         
-      
+        
         return cell
         
     }
 
-    
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+    }
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
