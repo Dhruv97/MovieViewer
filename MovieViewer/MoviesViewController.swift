@@ -68,7 +68,6 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
             completionHandler: { (dataOrNil, response, error) in
                 if let data = dataOrNil {
                     
-                    if error != nil {
                     
                     if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
                         data, options:[]) as? NSDictionary {
@@ -82,14 +81,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                             EZLoadingActivity.hide(success: true, animated: true)
 
                             self.tableView.reloadData()
-                    } else {
-                        
-                        EZLoadingActivity.hide(success: false, animated: true)
-                  
-                        
-                        
-                        }
-                        
+                                          
                             
                             
                             
@@ -141,6 +133,7 @@ task.resume()
         let movie = movies![indexPath.row]
         let title = movie["title"] as! String
         let overview = movie["overview"] as! String
+        
         let posterPath = movie["poster_path"] as! String
         
         let baseURL = "http://image.tmdb.org/t/p/w500"
