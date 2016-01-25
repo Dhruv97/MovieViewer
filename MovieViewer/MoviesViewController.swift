@@ -11,19 +11,24 @@ import EZLoadingActivity  //EZLoadingActivity.show("Loading...", disableUI: true
 import AFNetworking
 
 
-class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
+class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UISearchBarDelegate {
 
     @IBOutlet var tableView: UITableView!
     
    
     @IBOutlet var errorView: UILabel!
    
-    
+    @IBOutlet weak var searchBar: UISearchBar!
+       
     var refresher: UIRefreshControl!
+    
+    var filteredData: [NSDictionary]?
 
     var activityIndicator: UIActivityIndicatorView = UIActivityIndicatorView()
 
     var movies: [NSDictionary]?
+
+    var selectedMovie: NSDictionary?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,6 +53,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
 
         tableView.dataSource = self
         tableView.delegate = self
+        
+        searchBar.delegate = self
        
         
                let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
@@ -77,6 +84,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                             
                             
                             self.movies = responseDictionary["results"] as! [NSDictionary]
+                            
+                            self.filteredData = self.movies
                             
                             EZLoadingActivity.hide(success: true, animated: true)
 
@@ -117,44 +126,54 @@ task.resume()
     
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        if let movies = movies {
-            return movies.count
-        }
-        else {
+        if let filteredMovies = filteredData {
+            return filteredMovies.count
+        } else {
             return 0
-        }
-    }
+        }    }
     
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         
         
         let cell = tableView.dequeueReusableCellWithIdentifier("MovieCell", forIndexPath: indexPath) as! MovieCell
         
-        let movie = movies![indexPath.row]
+        let movie = filteredData![indexPath.row]
         let title = movie["title"] as! String
         let overview = movie["overview"] as! String
+        let rating = movie["vote_average"] as! Double
         
-        let posterPath = movie["poster_path"] as! String
+        if  let posterPath = movie["poster_path"] as? String {
         
         let baseURL = "http://image.tmdb.org/t/p/w500"
         
         let imageURL = NSURL(string: baseURL + posterPath)
         
+            cell.posterView.setImageWithURL(imageURL!)
+             cell.posterView.alpha = 0
+            UIView.animateWithDuration(1, delay: 0, options: UIViewAnimationOptions.TransitionCurlUp, animations: { () -> Void in
+                cell.posterView.alpha = 1
+                }, completion: nil)
         
+        } else {
+            cell.posterView.image = nil
+        }
         
         cell.titleLabel.text = title
         
         cell.overviewCell.text = overview
         
-        cell.posterView.setImageWithURL(imageURL!)
+       
         
+        cell.ratingLabel.text = String(rating)
         
         return cell
         
     }
 
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        
         tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        selectedMovie = filteredData![indexPath.row]
     }
     // MARK: - Navigation
 
@@ -169,6 +188,30 @@ task.resume()
         let movieDetailsViewController = segue.destinationViewController as! MovieDetailsViewController
         movieDetailsViewController.movie = movie
         
+    }
+    
+   
+    func searchBar(searchBar: UISearchBar, textDidChange searchText: String) {
+      
+        filteredData = searchText.isEmpty ? movies : movies!.filter({(movie: NSDictionary) -> Bool in
+            if let title = movie["title"] as? String {
+                return title.rangeOfString(searchText, options: .CaseInsensitiveSearch) != nil
+            }
+            return false
+        })
+        
+        tableView.reloadData()
+    }
+    
+    
+    func searchBarTextDidBeginEditing(searchBar: UISearchBar) {
+        self.searchBar.showsCancelButton = true
+    }
+    
+    func searchBarCancelButtonClicked(searchBar: UISearchBar) {
+        searchBar.showsCancelButton = false
+        searchBar.text = ""
+        searchBar.resignFirstResponder()
     }
     
 

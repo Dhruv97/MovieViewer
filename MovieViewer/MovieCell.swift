@@ -18,6 +18,8 @@ class MovieCell: UITableViewCell {
     @IBOutlet var posterView: UIImageView!
     
     
+    @IBOutlet var ratingLabel: UILabel!
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code

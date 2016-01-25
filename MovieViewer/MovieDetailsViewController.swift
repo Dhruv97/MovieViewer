@@ -16,6 +16,8 @@ class MovieDetailsViewController: UIViewController {
     
     @IBOutlet var overviewLabel: UILabel!
     
+    @IBOutlet weak var ratingLabel: UILabel!
+    
     var movie: NSDictionary!
     
     override func viewDidLoad() {
@@ -23,6 +25,9 @@ class MovieDetailsViewController: UIViewController {
 
         titleLabel.text = movie["title"] as! String
         overviewLabel.text = movie["overview"] as! String
+  let rating =  movie["vote_average"] as! Double
+        
+        ratingLabel.text = String(rating)
         
         let posterPath = movie["poster_path"] as! String
         
