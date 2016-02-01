@@ -16,7 +16,6 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     @IBOutlet var tableView: UITableView!
     
    
-    @IBOutlet var errorView: UILabel!
    
     @IBOutlet weak var searchBar: UISearchBar!
        
@@ -29,6 +28,9 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     var movies: [NSDictionary]?
 
     var selectedMovie: NSDictionary?
+    
+    var endpoint: String = ""
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,7 +60,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
        
         
                let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-                let url = NSURL(string:"https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
+                let url = NSURL(string:"https://api.themoviedb.org/3/movie/\(endpoint)?api_key=\(apiKey)")
         
         
  EZLoadingActivity.show("Loading...", disableUI: true)
@@ -166,14 +168,21 @@ task.resume()
         
         cell.ratingLabel.text = String(rating)
         
+        let backgroundView = UIView()
+        backgroundView.backgroundColor = UIColor.blueColor().colorWithAlphaComponent(0.15)
+        cell.selectedBackgroundView = backgroundView
+
+        
         return cell
         
     }
 
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        //tableView.deselectRowAtIndexPath(indexPath, animated: true)
         selectedMovie = filteredData![indexPath.row]
+        
+        
     }
     // MARK: - Navigation
 
